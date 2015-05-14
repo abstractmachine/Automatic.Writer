@@ -46,7 +46,7 @@ class LineFoldingGlyphGenerator: NSGlyphGenerator, NSGlyphStorage {
         //myGlyphs.memory = NSGlyph(NSControlGlyph)
         //myGlyphs++
         
-        let layoutManager = destination as NSLayoutManager
+        let layoutManager = destination as! NSLayoutManager
         //var myGlyphs = UnsafeMutablePointer<NSGlyph>(glyphs)
         var myGlyphs = [NSGlyph]()
         for var i = 0; i < length; i++ {
@@ -98,7 +98,7 @@ class LineFoldingGlyphGenerator: NSGlyphGenerator, NSGlyphStorage {
             }
         }
         */
-        destination.insertGlyphs(&myGlyphs, length: countElements(myGlyphs), forStartingGlyphAtIndex: glyphIndex, characterIndex: charIndex)
+        destination.insertGlyphs(&myGlyphs, length: count(myGlyphs), forStartingGlyphAtIndex: glyphIndex, characterIndex: charIndex)
         
         //myGlyphs.destroy(length)
         //myGlyphs.dealloc(length)

@@ -44,15 +44,15 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
         // setting views
         if let storyboard = NSStoryboard(name: "Main", bundle: nil) {   // get storyboard
             
-            mySplitView = window?.contentView.subviews[0] as NSSplitView?
+            mySplitView = window?.contentView.subviews[0] as! NSSplitView?
             if let splitView = mySplitView { // window?.contentView.subviews[0] as? NSSplitView {    // get splitview (set manually in storyboard)
                 splitView.delegate = self
                 
                 // create controllers
-                myFileBrowserController = storyboard.instantiateControllerWithIdentifier("FileBrowserController") as FileBrowserController?
-                myTextViewController = storyboard.instantiateControllerWithIdentifier("TextViewController") as TextViewController?
-                myWebViewController = storyboard.instantiateControllerWithIdentifier("WebViewController") as WebViewController?
-                htmlViewController = storyboard.instantiateControllerWithIdentifier("TextViewController") as TextViewController?
+                myFileBrowserController = storyboard.instantiateControllerWithIdentifier("FileBrowserController") as! FileBrowserController?
+                myTextViewController = storyboard.instantiateControllerWithIdentifier("TextViewController") as! TextViewController?
+                myWebViewController = storyboard.instantiateControllerWithIdentifier("WebViewController") as! WebViewController?
+                htmlViewController = storyboard.instantiateControllerWithIdentifier("TextViewController") as! TextViewController?
                 
                 if  myFileBrowserController == nil ||
                     myTextViewController == nil ||
@@ -266,13 +266,13 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
         return proposedMax - 200
     }
     func splitView(splitView: NSSplitView, canCollapseSubview subview: NSView) -> Bool {
-        if subview == splitView.subviews[1] as NSView {
+        if subview == splitView.subviews[1] as! NSView {
             return false
         }
         return true
     }
     func splitView(splitView: NSSplitView, shouldAdjustSizeOfSubview subview: NSView) -> Bool {
-        if subview == splitView.subviews[0] as NSView {
+        if subview == splitView.subviews[0] as! NSView {
             return false
         }
         return true

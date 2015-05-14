@@ -99,7 +99,7 @@ class Highlighter: NSObject {
         if let regex = initRegex(pattern, options: NSRegularExpressionOptions.CaseInsensitive) {
             let matches = regex.matchesInString(fullText!, options: NSMatchingOptions.ReportProgress, range: range)
             for result in matches {
-                let match = result as NSTextCheckingResult
+                let match = result as! NSTextCheckingResult
                 var ranges:[NSRange] = [NSRange]()
                 for var i = 0; i < match.numberOfRanges; ++i {
                     ranges += [match.rangeAtIndex(i)]
@@ -141,7 +141,7 @@ class Highlighter: NSObject {
         
         // first we need the beginning of the function
         let funcOpenings = getTokensForPattern(RegexPattern.jsFunctions, ofType: HighlightType.JSDECLARATION, inRange: range)
-        let fullTextLength = countElements(fullText!)
+        let fullTextLength = count(fullText!)
         
         // then we must find the closing part for each function
         for opening in funcOpenings {
@@ -191,14 +191,14 @@ class Highlighter: NSObject {
         
         var pairs = [Pair]()
         
-        while(countElements(tokens) > 1) {
+        while(count(tokens) > 1) {
             // remove closing tags that could be leading the array
             while tokenIsAClosingTag(tokens[0]) {
                 //println("remove token \(tokens[0])")
                 tokens.removeAtIndex(0)
-                if countElements(tokens) == 0 { break; }
+                if count(tokens) == 0 { break; }
             }
-            if countElements(tokens) < 2 { break; } // can't find pairs with less than 2 elements
+            if count(tokens) < 2 { break; } // can't find pairs with less than 2 elements
             
             var pairFound = 0
             var openingTagIndex = -1
@@ -243,8 +243,8 @@ class Highlighter: NSObject {
         // insert back pairs into tokens
         tokens.removeAll(keepCapacity: false)
         for pair in pairs {
-            let a:HighlightToken = pair.a as HighlightToken
-            let b:HighlightToken = pair.b as HighlightToken
+            let a:HighlightToken = pair.a as! HighlightToken
+            let b:HighlightToken = pair.b as! HighlightToken
             tokens += [a, b]
             //println([a, b])
         }

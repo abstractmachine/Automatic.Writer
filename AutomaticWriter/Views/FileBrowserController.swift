@@ -73,7 +73,7 @@ class FileBrowserController: NSViewController, NSOutlineViewDelegate, NSOutlineV
             }
         }
         // expand in reverse order
-        for var i:Int = countElements(items)-1; i >= 0; i-- {
+        for var i:Int = count(items)-1; i >= 0; i-- {
             myOutlineView.expandItem(items[i])
         }
     }
@@ -136,7 +136,7 @@ class FileBrowserController: NSViewController, NSOutlineViewDelegate, NSOutlineV
     }
     
     func outlineView(outlineView: NSOutlineView, shouldEditTableColumn tableColumn: NSTableColumn?, item : AnyObject) -> Bool {
-        let systemItem = item as FileSystemItem
+        let systemItem = item as! FileSystemItem
         if systemItem.isRoot() { return false }
         else { return true }
     }

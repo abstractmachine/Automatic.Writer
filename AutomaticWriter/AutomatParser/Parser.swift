@@ -37,7 +37,7 @@ class Parser : NSObject {
         
         // MARK: * get tokens from highlighter
         var highlighter = Highlighter()
-        let highlights = highlighter.findHighlightsInRange(NSMakeRange(0, countElements(automatText)), forText: automatText)
+        let highlights = highlighter.findHighlightsInRange(NSMakeRange(0, count(automatText)), forText: automatText)
         
         // MARK: * convert them into ConvertibleTokens that contain the string they're replacing
         var titles = [ConvertibleToken]()
@@ -193,7 +193,7 @@ class Parser : NSObject {
     // MARK: ConvertibleTokens for tags from Highlights
     class func tagHighlightsToConvertibleTokens(openingTags:[HighlightToken], closingTags:[HighlightToken], withText text:String) -> [ConvertibleToken] {
         var tokens = [ConvertibleToken]()
-        for var i = 0; i < countElements(openingTags); i++ {
+        for var i = 0; i < count(openingTags); i++ {
             let lengthOfCompleteTag = closingTags[i].ranges[0].location + closingTags[i].ranges[0].length - openingTags[i].ranges[0].location
             let rangeOfCompleteTag = NSMakeRange(openingTags[i].ranges[0].location, lengthOfCompleteTag)
             var type = (openingTags[i].type == HighlightType.OPENINGBLOCKTAG && closingTags[i].type == HighlightType.CLOSINGBLOCKTAG) ? HighlightType.BLOCKTAG : HighlightType.INLINETAG
@@ -269,7 +269,7 @@ class Parser : NSObject {
             var range = Range<String.Index>(start: startRange, end: endRange)
             tempText = tempText.stringByReplacingCharactersInRange(range, withString: token.captureGroups[0])
             
-            delta += countElements(token.captureGroups[0]) - token.ranges[0].length
+            delta += count(token.captureGroups[0]) - token.ranges[0].length
             
             if token.type == HighlightType.OPENINGBLOCKTAG {
                 divOpenings += [token.ranges[0].location + delta + token.ranges[0].length] // get the new opening location+length
@@ -284,8 +284,8 @@ class Parser : NSObject {
         var divContents = [String]()
         for pair in pairs {
             //println("\(self.className()) : \(pair)")
-            let startRange = advance(tempText.startIndex, pair.a as Int)
-            let endRange = advance(tempText.startIndex, pair.b as Int)
+            let startRange = advance(tempText.startIndex, pair.a as! Int)
+            let endRange = advance(tempText.startIndex, pair.b as! Int)
             divContents += [tempText.substringWithRange(startRange..<endRange)]
         }
         
@@ -334,7 +334,7 @@ class Parser : NSObject {
     // MARK: find matches for regular expressions
     
     class func getOccurencesOfRegularExpression(expression:String, inString string:String) -> [RegexMatch]? {
-        return getOccurencesOfRegularExpression(expression, inString: string, withRange: NSMakeRange(0, countElements(string)))
+        return getOccurencesOfRegularExpression(expression, inString: string, withRange: NSMakeRange(0, count(string)))
     }
     
     class func getOccurencesOfRegularExpression(expression:String, inString string:String, withRange range:NSRange) -> [RegexMatch]? {
@@ -355,7 +355,7 @@ class Parser : NSObject {
                 // for each match, create a list of tokens with the concerned string and its range
                 for var i = 0; i < match.numberOfRanges; ++i {
                     let matchRange = match.rangeAtIndex(i)
-                    if matchRange.location > (countElements(string) - 1) {
+                    if matchRange.location > (count(string) - 1) {
                         regexMatchTokens += [Token(_string: "", _range: NSMakeRange(0, 0))]
                         continue
                     }
@@ -470,7 +470,7 @@ class Parser : NSObject {
     class func getHtmlTitleWithMatches(matches:[RegexMatch]?) -> String {
         var title = defaultTitle
         if let actualMatches = matches {
-            if countElements(actualMatches) > 0 {
+            if count(actualMatches) > 0 {
                 title = actualMatches[0].groups[1].string
             }
         }
@@ -526,7 +526,7 @@ class Parser : NSObject {
         var eventAssignments = getOccurencesOfRegularExpression(expression, inString: text)
         //println(eventAssignments)
         if let matches = eventAssignments {
-            if countElements(matches) > 0 {
+            if count(matches) > 0 {
                 events += "\n<script>\n"
             }
             for match in matches {
@@ -617,7 +617,7 @@ class Parser : NSObject {
         var nested = 0 // keeps track of nested brace we find
         
         // found all { and }
-        let searchRange = NSMakeRange(braceIntIndex, countElements(text) - braceIntIndex)
+        let searchRange = NSMakeRange(braceIntIndex, count(text) - braceIntIndex)
         // TODO: add the possibility to capture a commentary at the end of the function
         var braces = getOccurencesOfRegularExpression("\\{|(?:\\}(?:(?=\\n)|(?=\\Z)))", inString: text, withRange: searchRange)
         
@@ -727,10 +727,10 @@ class Parser : NSObject {
         
         // the pairs are added in the list with the order outside first, inside last
         var safeKeeper = 0
-        while(countElements(tagMatches) > 1) {
+        while(count(tagMatches) > 1) {
             var nestLevel = 0
             var openingIndex = 0
-            for var i = 1; i < countElements(tagMatches); i++ {
+            for var i = 1; i < count(tagMatches); i++ {
                 if tagMatches[i].position == MatchPosition.OPENING {
                     nestLevel++
                     continue

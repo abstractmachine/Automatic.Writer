@@ -84,7 +84,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
             //let test = "print whole string"
             //println(test[test.startIndex...test.endIndex.predecessor()])
             
-            if countElements(myTextView.string!) >= 2 {
+            if count(myTextView.string!) >= 2 {
                 // looking for double line breaks \n\n before and after. Make a range out of it for highlighting
                 var backwardIndex = advance(myTextView.string!.startIndex, myTextView.selectedRange().location)
                 // we don't want the cursor to be at an extreme
@@ -115,7 +115,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
             } else {
                 //println("\(self.className): ================================")
                 //println("\(self.className): highlight for whole file")
-                let range = NSMakeRange(0, countElements(myTextView.string!))
+                let range = NSMakeRange(0, count(myTextView.string!))
                 // MARK: -- deactivating highlighting
                 highlightText(range)
             }
@@ -131,14 +131,14 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
             text.beginEditing()
             
             // get old selected range
-            var oldRange = notification.userInfo?.values.first as NSRange
+            var oldRange = notification.userInfo?.values.first as! NSRange
             if NSMaxRange(oldRange) < text.length { // when we load a new file, the old range can be out of bounds.
                 //println("\(self.className): ================================")
                 //println("\(self.className): remove foldable and add folded attribute in range \(oldRange)")
                 removeAttribute(lineFoldableAttributeName, andAdd: lineFoldedAttributeName, touchingRange: oldRange, inTextStorage: text)
             }
             
-            var ranges = myTextView.selectedRanges as [NSRange]
+            var ranges = myTextView.selectedRanges as! [NSRange]
             //println("\(self.className): ================================")
             //println("\(self.className): remove folded and add foldable attribute in range \(ranges[0])")
             removeAttribute(lineFoldedAttributeName, andAdd: lineFoldableAttributeName, touchingRange: ranges[0], inTextStorage: text)
@@ -236,16 +236,19 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
             println("can't get content of file, might be because of encoding")
             return false
         }
+		
         // set font of text view
-        myTextView.font = NSFont(name: "Courier New", size: 12)
+        //myTextView.font = NSFont(name: "Courier New", size: 14)
+		myTextView.font = NSFont(name: "Courier", size:14)
         // and of text storage
-        myTextView.textStorage?.font = NSFont(name: "Courier New", size: 12)
+        //myTextView.textStorage?.font = NSFont(name: "Courier New", size: 14)
+		myTextView.textStorage?.font = NSFont(name: "Courier", size:14)
         
         if filePath.pathExtension == "automat" {
             // MARK: -- deactivating highlighting
             //println("\(self.className): ================================")
             //println("\(self.className): highlight from loading file")
-            highlightText(NSMakeRange(0, countElements(text!)))
+            highlightText(NSMakeRange(0, count(text!)))
         }
         
         textModified = false
@@ -355,7 +358,8 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
                         text.addAttribute(NSForegroundColorAttributeName, value: NSColor.redColor(), range: token.ranges[0])
                     case .OPENINGBLOCKTAG, .CLOSINGBLOCKTAG, .OPENINGINLINETAG, .CLOSINGINLINETAG:
                         //myTextView.setTextColor(NSColor.redColor(), range: token.ranges[0])
-                        text.addAttribute(NSForegroundColorAttributeName, value: NSColor.redColor(), range: token.ranges[0])
+                        //text.addAttribute(NSForegroundColorAttributeName, value: NSColor.redColor(), range: token.ranges[0])
+						text.addAttribute(NSForegroundColorAttributeName, value: NSColor(calibratedRed: 1.0, green: 0.0, blue: 0.0, alpha: 0.75), range: token.ranges[0])
                         text.addAttribute(attributeName, value: true, range: token.ranges[0])
                     case .TWINE:
                         //myTextView.setTextColor(NSColor.blueColor(), range: token.ranges[0])

@@ -40,7 +40,7 @@ class FileSystemItem: NSObject {
     
     func numberOfChildren() -> Int {
         reloadChildren()
-        return (children == leafNode) ? -1 : countElements(children)
+        return (children == leafNode) ? -1 : count(children)
     }
     
     func getParent() -> FileSystemItem? {
@@ -57,8 +57,8 @@ class FileSystemItem: NSObject {
     }
     
     func cleanChildren() {
-        let count = countElements(children)
-        for (var i = count-1; i >= 0; i--) {
+        let childrenCount = count(children)
+        for (var i = childrenCount-1; i >= 0; i--) {
             if !NSFileManager.defaultManager().fileExistsAtPath(children[i].fullPath()) {
                 children.removeAtIndex(i)
             }
@@ -101,11 +101,11 @@ class FileSystemItem: NSObject {
             
             let directoryContent:[AnyObject]? = NSFileManager.defaultManager().contentsOfDirectoryAtPath(path, error: nil)
             if let content = directoryContent {
-                let numChildren:Int = countElements(content)
+                let numChildren:Int = count(content)
                 for (index, child) in enumerate(content) {
                     let fileName:String? = child as? String
                     if let name = fileName {
-                        if countElements(name) < 1 { continue; }
+                        if count(name) < 1 { continue; }
                         if name[name.startIndex] == "." { continue; }
                         
                         if !isFileInChildren(name) {
@@ -153,7 +153,7 @@ class FileSystemItem: NSObject {
     }
     
     func childAtIndex(index:Int) -> AnyObject? {
-        if index > countElements(children)-1 { return nil }
+        if index > count(children)-1 { return nil }
         return children[index]
     }
     

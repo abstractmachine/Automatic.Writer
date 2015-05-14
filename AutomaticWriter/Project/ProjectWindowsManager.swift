@@ -26,7 +26,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     func panelDefaultDirectory() -> String {
         // get the user's document directory : prefered by default
         let documentPathSearch = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
-        var preferedPath:String = documentPathSearch[0] as String
+        var preferedPath:String = documentPathSearch[0] as! String
         
         // get the directory of the last opened project : overwrite prefered if it exists
         let lastOpenedProjectPath = NSUserDefaults.standardUserDefaults().stringForKey("projectPath")
@@ -108,7 +108,8 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
         panel.allowsMultipleSelection = false
         
         switch panel.runModal() {
-        case NSOKButton:
+		case NSModalResponseOK:
+        //case NSOKButton:
             let url = panel.URLs[0] as? NSURL
             if let actualUrl = url {
                 focusOrAddWindowForProjectAtURL(actualUrl)
@@ -116,7 +117,8 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
                 println("\(self.className) error: can't convert chosen url to NSURL")
             }
             break
-        case NSCancelButton:
+        //case NSCancelButton:
+		case NSModalResponseCancel:
             // do nothing
             break
         default:
@@ -140,7 +142,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
         let controller = getWindowControllerWithProjectPath(path)
         if controller != nil {
             // the window exists, make focus
-            if let window = controller!.window? {
+            if let window = controller!.window { // removing .window?
                 window.makeKeyAndOrderFront(self)
                 NSUserDefaults.standardUserDefaults().setValue(path, forKey: "projectPath")
             }
@@ -161,7 +163,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
         if let storyboard = NSStoryboard(name: "Main", bundle: nil) {   // get storyboard
             if let controller = storyboard.instantiateControllerWithIdentifier("ProjectWindowController") as? ProjectWindowController {
                 controller.setupProjectAtPath(path)
-                if let window = controller.window? {
+                if let window = controller.window { // removing .window?
                     window.delegate = self;
                     window.makeKeyAndOrderFront(window)
                 }
@@ -220,11 +222,11 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     func setupRecentProjectMenu() {
         let pathsObject:AnyObject? = NSUserDefaults.standardUserDefaults().valueForKey("recentProjects")
         if let paths = pathsObject as? [String] {
-            let count = countElements(paths)
-            if count < 3 {
+            let pathCount = count(paths)
+            if pathCount < 3 {
                 return
             }
-            for var i = count-3; i >= 0; --i { // add backwards to keep the correct order
+            for var i = pathCount-3; i >= 0; --i { // add backwards to keep the correct order
                 if NSFileManager.defaultManager().fileExistsAtPath(paths[i]) {
                     addInRecentProjectsMenu(paths[i])
                 }
@@ -249,14 +251,14 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
                 mi.representedObject = path
                 recentMenu.insertItem(mi, atIndex: 0)
                 
-                if countElements(recentMenu.itemArray) > maxRecentProjects+2 {
+                if count(recentMenu.itemArray) > maxRecentProjects+2 {
                     recentMenu.removeItemAtIndex(maxRecentProjects)
                 }
                 
                 // save recent projects to user default as array
                 var paths:[AnyObject] = []
                 for item in recentMenu.itemArray {
-                    let it = item as NSMenuItem
+                    let it = item as! NSMenuItem
                     paths += [it.title]
                 }
                 NSUserDefaults.standardUserDefaults().setValue(paths, forKey: "recentProjects")

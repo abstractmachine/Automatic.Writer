@@ -70,8 +70,12 @@ class MyATSTypesetter: NSATSTypesetter {
             
             if fold {
                 var controlPointEncountered = 0
-                
-                var foldGlyph = NSGlyph(391) // this is the ♦︎ glyph for "Courier new" font
+				
+				// replacing solid-diamond with open lozenge
+				//var foldGlyph = NSFont(name: "Courier", size:14)!.glyphWithName("lozenge")
+				//println(foldGlyph)
+				var foldGlyph = NSGlyph(179)
+                //var foldGlyph = NSGlyph(391) // this is the ♦︎ glyph for "Courier new" font
                 // TODO: try with an enumerate function to see if it's faster
                 var iterator:Int = characterRange.location
                 
