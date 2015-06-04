@@ -1,1 +1,1 @@
-// New script created by a Platypus author.
+// New script created by a Automatic.Writer.
