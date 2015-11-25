@@ -36,7 +36,7 @@ class LineFoldingGlyphGenerator: NSGlyphGenerator, NSGlyphStorage {
     
     func insertGlyphs(glyphs: UnsafePointer<NSGlyph>, length: Int, forStartingGlyphAtIndex glyphIndex: Int, characterIndex charIndex: Int) {
         
-        println("insert \(length) glyphs for starting glyphs at index \(glyphIndex) and char index \(charIndex)")
+        print("insert \(length) glyphs for starting glyphs at index \(glyphIndex) and char index \(charIndex)")
         //let layoutManager = destination as NSLayoutManager
         //println("right now, there's \(layoutManager.numberOfGlyphs) glyphs in the buffer")
         
@@ -58,7 +58,7 @@ class LineFoldingGlyphGenerator: NSGlyphGenerator, NSGlyphStorage {
             
             if let value = layoutManager.textStorage?.attribute("lineFolding", atIndex: charIndex+i, effectiveRange: nil) as? Bool {
                 if value {
-                    println("char at index \(charIndex+i) must be lineFolded")
+                    print("char at index \(charIndex+i) must be lineFolded")
                     //myGlyphs.advancedBy(i).memory = NSGlyph(NSNullGlyph)
                 } else {
                     // not line folded, add the glyph
@@ -98,7 +98,7 @@ class LineFoldingGlyphGenerator: NSGlyphGenerator, NSGlyphStorage {
             }
         }
         */
-        destination.insertGlyphs(&myGlyphs, length: count(myGlyphs), forStartingGlyphAtIndex: glyphIndex, characterIndex: charIndex)
+        destination.insertGlyphs(&myGlyphs, length: myGlyphs.count, forStartingGlyphAtIndex: glyphIndex, characterIndex: charIndex)
         
         //myGlyphs.destroy(length)
         //myGlyphs.dealloc(length)

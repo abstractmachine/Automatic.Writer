@@ -29,22 +29,22 @@ class DragNDropScrollView: NSScrollView {
     
     // the value returned changes the mouse icon
     override func draggingEntered(sender: NSDraggingInfo) -> NSDragOperation {
-        println("drag entered")
+        Swift.print("drag entered")
         
         let pboard:NSPasteboard = sender.draggingPasteboard()
         let sourceDragMask:NSDragOperation = sender.draggingSourceOperationMask()
         
         // cast the types array from [AnyObject]? to [String]
-        var types:[String]? = pboard.types as? [String]
+        let types:[String]? = pboard.types as [String]?
         
         if let actualTypes = types {
-            if contains(actualTypes, NSFilenamesPboardType) {
-                if (sourceDragMask & NSDragOperation.Link) == NSDragOperation.Link {
+            if actualTypes.contains(NSFilenamesPboardType) {
+                if (sourceDragMask.intersect(NSDragOperation.Link)) == NSDragOperation.Link {
                     // we get a link, but we're going to copy files
                     // so we show a "copy" icon
                     return NSDragOperation.Copy
                 }
-                else if (sourceDragMask & NSDragOperation.Copy) == NSDragOperation.Copy {
+                else if (sourceDragMask.intersect(NSDragOperation.Copy)) == NSDragOperation.Copy {
                     return NSDragOperation.Copy
                 }
             }
@@ -54,22 +54,22 @@ class DragNDropScrollView: NSScrollView {
     }
     
     override func performDragOperation(sender: NSDraggingInfo) -> Bool {
-        println("perform drag operation")
+        Swift.print("perform drag operation")
         let pboard = sender.draggingPasteboard()
         let sourceDragMask = sender.draggingSourceOperationMask()
         
         // cast the types array from [AnyObject]? to [String]
-        var types:[String]? = pboard.types as? [String]
+        let types:[String]? = pboard.types as [String]?
         
         if let actualTypes = types {
-            if contains(actualTypes, NSFilenamesPboardType) {
+            if actualTypes.contains(NSFilenamesPboardType) {
                 let files: AnyObject? = pboard.propertyListForType(NSFilenamesPboardType)
                 
-                var paths = files as? [String]
+                let paths = files as? [String]
                 
-                if (sourceDragMask & NSDragOperation.Link) == NSDragOperation.Link {
+                if (sourceDragMask.intersect(NSDragOperation.Link)) == NSDragOperation.Link {
                     if let actualPaths = paths {
-                        println("files dropped: \(actualPaths)")
+                        Swift.print("files dropped: \(actualPaths)")
                         delegate?.onFilesDrop(actualPaths)
                     }
                 }

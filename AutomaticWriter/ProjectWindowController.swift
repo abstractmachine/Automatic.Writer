@@ -32,8 +32,8 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
         
         // resizing window
         if let myWindow = window {
-            myWindow.title = path.lastPathComponent
-            var size = NSSize(width: 1024, height: 600)
+            myWindow.title = (path as NSString).lastPathComponent
+            let size = NSSize(width: 1024, height: 600)
             var frame = myWindow.frame
             frame.origin.y += frame.size.height // remove the old height
             frame.origin.y -= size.height // add the new height
@@ -42,59 +42,58 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
         }
         
         // setting views
-        if let storyboard = NSStoryboard(name: "Main", bundle: nil) {   // get storyboard
-            
-            mySplitView = window?.contentView.subviews[0] as! NSSplitView?
-            if let splitView = mySplitView { // window?.contentView.subviews[0] as? NSSplitView {    // get splitview (set manually in storyboard)
-                splitView.delegate = self
-                
-                // create controllers
-                myFileBrowserController = storyboard.instantiateControllerWithIdentifier("FileBrowserController") as! FileBrowserController?
-                myTextViewController = storyboard.instantiateControllerWithIdentifier("TextViewController") as! TextViewController?
-                myWebViewController = storyboard.instantiateControllerWithIdentifier("WebViewController") as! WebViewController?
-                htmlViewController = storyboard.instantiateControllerWithIdentifier("TextViewController") as! TextViewController?
-                
-                if  myFileBrowserController == nil ||
-                    myTextViewController == nil ||
-                    myWebViewController == nil ||
-                    htmlViewController == nil {
-                        
-                    println("can't setup views properly")
-                    return
-                }
-                
-                // set file browser
-                splitView.addSubview(myFileBrowserController!.view)
-                myFileBrowserController!.setRootFolder(path)
-                myFileBrowserController!.delegate = self
-                println("check the view (tableview?): \(myFileBrowserController!.myOutlineView.tableColumns)")
-                myFileBrowserController!.view.nextKeyView = myTextViewController!.myTextView
-                
-                // set text view
-                splitView.addSubview(myTextViewController!.view)
-                myTextViewController!.delegate = self;
-                myTextViewController!.myTextView.editable = false
-                myTextViewController!.myTextView.nextKeyView = myFileBrowserController!.view
-                
-                // set web view
-                splitView.addSubview(myWebViewController!.view)
-                
-                splitView.addSubview(htmlViewController!.view)
-                htmlViewController!.myTextView.editable = false
-                
-                //splitView.adjustSubviews()
-                let positionZero:CGFloat = 200
-                splitView.setPosition(positionZero, ofDividerAtIndex: 0)
-                splitView.adjustSubviews()
-                showTextAndPreviewViews()
-                /*
-                let positionOne = ((splitView.frame.width - 200) / 2) + 200
-                let positionTwo = splitView.frame.width
-                splitView.setPosition(positionOne, ofDividerAtIndex: 1)
-                splitView.setPosition(positionTwo, ofDividerAtIndex: 2)
-                */
-            }
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)   // get storyboard
+        
+        // setup splitview
+        mySplitView = NSSplitView()
+        mySplitView!.dividerStyle = .Thin
+        mySplitView!.autoresizesSubviews = true
+        mySplitView!.vertical = true
+        mySplitView!.delegate = self
+        if let actualWindow = window {
+            actualWindow.contentView = mySplitView
         }
+        
+        // create controllers
+        myFileBrowserController = storyboard.instantiateControllerWithIdentifier("FileBrowserController") as? FileBrowserController
+        myTextViewController = storyboard.instantiateControllerWithIdentifier("TextViewController") as? TextViewController
+        myWebViewController = storyboard.instantiateControllerWithIdentifier("WebViewController") as? WebViewController
+        htmlViewController = storyboard.instantiateControllerWithIdentifier("TextViewController") as? TextViewController
+        
+        if  myFileBrowserController == nil ||
+            myTextViewController == nil ||
+            myWebViewController == nil ||
+            htmlViewController == nil {
+                
+                print("can't setup views properly\n -filebrowser: \(myFileBrowserController)\n -textView: \(myTextViewController)\n -webView: \(myWebViewController)\n -htmlView: \(htmlViewController)")
+                return
+        }
+        
+        // set file browser
+        mySplitView!.addSubview(myFileBrowserController!.view)
+        myFileBrowserController!.setRootFolder(path)
+        myFileBrowserController!.delegate = self
+        print("check the view (tableview?): \(myFileBrowserController!.myOutlineView.tableColumns)")
+        myFileBrowserController!.view.nextKeyView = myTextViewController!.myTextView
+        
+        // set text view
+        mySplitView!.addSubview(myTextViewController!.view)
+        myTextViewController!.delegate = self;
+        myTextViewController!.myTextView.editable = false
+        myTextViewController!.myTextView.nextKeyView = myFileBrowserController!.view
+        
+        // set web view
+        mySplitView!.addSubview(myWebViewController!.view)
+        
+        mySplitView!.addSubview(htmlViewController!.view)
+        htmlViewController!.myTextView.editable = false
+        
+        //splitView.adjustSubviews()
+        let positionZero:CGFloat = 200
+        mySplitView!.setPosition(positionZero, ofDividerAtIndex: 0)
+        mySplitView!.adjustSubviews()
+        showTextAndPreviewViews()
+        
     }
     
     // this function is called by the ProjectWindowsManager (the delegate of all the windows)
@@ -105,12 +104,12 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
     
     /// Description of func
     ///
-    /// :param: numberOfParts first int
-    /// :param: numberOfSubparts a float
-    /// :returns: value returned
+    /// - parameter numberOfParts: first int
+    /// - parameter numberOfSubparts: a float
+    /// - returns: value returned
     func printString(aString : String, nTimes : Int) -> Bool {
         for (var i = 0; i < nTimes; i++) {
-            println(aString)
+            print(aString)
         }
         return true;
     }
@@ -135,7 +134,7 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
                     }
                 }
             } else {
-                println("app with name \"\(actualAppName)\" doesn't exist")
+                print("app with name \"\(actualAppName)\" doesn't exist")
             }
         }
     }
@@ -146,10 +145,10 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
     func onFileSelected(path:String) {
         if AutomatFileManager.fileAtPathIsATextFile(path) {
             myTextViewController?.loadTextFromFile(path)
-            if path.pathExtension == "html" {
+            if (path as NSString).pathExtension == "html" {
                 myWebViewController?.loadFile(path)
             }
-            if path.pathExtension == "automat" {
+            if (path as NSString).pathExtension == "automat" {
                 let htmlPath = AutomatFileManager.getHtmlFileOfAutomatFileAtPath(path)
                 if let actualHtmlPath = htmlPath {
                     myWebViewController?.loadFile(actualHtmlPath)
@@ -163,7 +162,7 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
             }
             if let myWindow = window {
                 if let myProject = project {
-                    myWindow.title = "\(myProject.folderName) - \(path.lastPathComponent)"
+                    myWindow.title = "\(myProject.folderName) - \((path as NSString).lastPathComponent)"
                 }
             }
         }
@@ -199,12 +198,12 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
         let launchPath = "/usr/bin/git"
         if NSFileManager.defaultManager().fileExistsAtPath(launchPath) {
             if project == nil {
-                println("project is not setup, can't commit")
+                print("project is not setup, can't commit")
                 return
             }
-            if NSFileManager.defaultManager().fileExistsAtPath(project!.path.stringByAppendingPathComponent(".git")) {
+            if NSFileManager.defaultManager().fileExistsAtPath((project!.path as NSString).stringByAppendingPathComponent(".git")) {
                 // git init has already been done
-                var alert = NSAlert()
+                let alert = NSAlert()
                 alert.messageText = "Commit message."
                 alert.informativeText = ""
                 alert.addButtonWithTitle("Commit")
@@ -240,7 +239,7 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
     }
     
     func alertNoGit() {
-        var alert = NSAlert()
+        let alert = NSAlert()
         alert.informativeText = "Git is not installed on this machine. Get it on http://git-scm.com/ if you want to use versioning."
         alert.messageText = "Git can't be found"
         alert.addButtonWithTitle("Ok")
@@ -266,13 +265,13 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
         return proposedMax - 200
     }
     func splitView(splitView: NSSplitView, canCollapseSubview subview: NSView) -> Bool {
-        if subview == splitView.subviews[1] as! NSView {
+        if subview == splitView.subviews[1] {
             return false
         }
         return true
     }
     func splitView(splitView: NSSplitView, shouldAdjustSizeOfSubview subview: NSView) -> Bool {
-        if subview == splitView.subviews[0] as! NSView {
+        if subview == splitView.subviews[0] {
             return false
         }
         return true
@@ -282,13 +281,13 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
     // MARK: * Navigation between views
     // TODO: make navigation between views work...
     override func insertTab(sender: AnyObject?) {
-        println("insert tab")
+        print("insert tab")
     }
     
     // =============================================
     // MARK: * Show/Hide views
     @IBAction func toggleFileBrowser(sender:AnyObject?) {
-        println("\(window?.firstResponder)")
+        print("\(window?.firstResponder)")
         
         if let splitView = mySplitView {
             if let fileBrowserController = myFileBrowserController {

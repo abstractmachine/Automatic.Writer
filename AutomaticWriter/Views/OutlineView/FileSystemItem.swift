@@ -40,7 +40,7 @@ class FileSystemItem: NSObject {
     
     func numberOfChildren() -> Int {
         reloadChildren()
-        return (children == leafNode) ? -1 : count(children)
+        return (children == leafNode) ? -1 : children.count
     }
     
     func getParent() -> FileSystemItem? {
@@ -57,7 +57,7 @@ class FileSystemItem: NSObject {
     }
     
     func cleanChildren() {
-        let childrenCount = count(children)
+        let childrenCount = children.count
         for (var i = childrenCount-1; i >= 0; i--) {
             if !NSFileManager.defaultManager().fileExistsAtPath(children[i].fullPath()) {
                 children.removeAtIndex(i)
@@ -68,13 +68,13 @@ class FileSystemItem: NSObject {
     func fullPath() -> String {
         let fullPath = parent?.fullPath()
         if let tmpFullPath = fullPath {
-            return tmpFullPath.stringByAppendingPathComponent(relativePath)
+            return (tmpFullPath as NSString).stringByAppendingPathComponent(relativePath)
         }
         return relativePath
     }
     
     func sortChildren() {
-        children.sort(childrenSorter)
+        children.sortInPlace(childrenSorter)
     }
     
     func childrenSorter(this:FileSystemItem, that:FileSystemItem) -> Bool {
@@ -99,13 +99,13 @@ class FileSystemItem: NSObject {
         if valid == true && isDir.boolValue == true {
             cleanChildren()
             
-            let directoryContent:[AnyObject]? = NSFileManager.defaultManager().contentsOfDirectoryAtPath(path, error: nil)
+            let directoryContent:[AnyObject]? = try? NSFileManager.defaultManager().contentsOfDirectoryAtPath(path)
             if let content = directoryContent {
-                let numChildren:Int = count(content)
-                for (index, child) in enumerate(content) {
+                let numChildren:Int = content.count
+                for (index, child) in content.enumerate() {
                     let fileName:String? = child as? String
                     if let name = fileName {
-                        if count(name) < 1 { continue; }
+                        if name.characters.count < 1 { continue; }
                         if name[name.startIndex] == "." { continue; }
                         
                         if !isFileInChildren(name) {
@@ -124,7 +124,7 @@ class FileSystemItem: NSObject {
     func getChildOfItem(item:FileSystemItem, path:String) -> FileSystemItem? {
         if (item.numberOfChildren() > 0) {
             for child in item.children {
-                if child.relativePath.lastPathComponent == path {
+                if (child.relativePath as NSString).lastPathComponent == path {
                     return child
                 }
             }
@@ -140,7 +140,7 @@ class FileSystemItem: NSObject {
         }
         
         let relativeItemPath : String = path.stringByReplacingOccurrencesOfString(rootItem.fullPath(), withString: "")
-        let pathComponents = relativeItemPath.pathComponents
+        let pathComponents = (relativeItemPath as NSString).pathComponents
         var returnedItem:FileSystemItem? = rootItem
         
         for component:String in pathComponents {
@@ -153,7 +153,7 @@ class FileSystemItem: NSObject {
     }
     
     func childAtIndex(index:Int) -> AnyObject? {
-        if index > count(children)-1 { return nil }
+        if index > children.count-1 { return nil }
         return children[index]
     }
     

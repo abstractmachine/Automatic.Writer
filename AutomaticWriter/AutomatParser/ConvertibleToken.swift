@@ -18,8 +18,8 @@ class ConvertibleToken: HighlightToken {
                 captureGroups += [""]
                 continue
             }
-            let begining = advance(_text.startIndex, range.location)
-            let end = advance(begining, range.length-1)
+            let begining = _text.startIndex.advancedBy(range.location)
+            let end = begining.advancedBy(range.length-1)
             captureGroups += [_text.substringWithRange(begining...end)]
         }
         

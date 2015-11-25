@@ -10,7 +10,7 @@ import Foundation
 
 
 
-class RegexMatch : Printable {
+class RegexMatch : CustomStringConvertible {
     // in groups :
     // groups[0] is the full match ($0)
     // the following groups are the capture groups of the regex ($1, $2 etc.)

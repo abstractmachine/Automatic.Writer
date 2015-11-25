@@ -52,7 +52,7 @@ enum HighlightType {
 // the ranges are the regular expression's capture groups
 // the type allows the software to apply are different highlighting for each type
 
-class HighlightToken : Printable {
+class HighlightToken : CustomStringConvertible {
     let ranges:[NSRange]
     let type:HighlightType
     

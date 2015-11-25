@@ -22,17 +22,17 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     /// Tries to get the directory of the last opened project.
     /// If it fails, the default directory is the user's documents directory.
     ///
-    /// :returns: the starting path of the panel
+    /// - returns: the starting path of the panel
     func panelDefaultDirectory() -> String {
         // get the user's document directory : prefered by default
         let documentPathSearch = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)
-        var preferedPath:String = documentPathSearch[0] as! String
+        var preferedPath:String = documentPathSearch[0] 
         
         // get the directory of the last opened project : overwrite prefered if it exists
         let lastOpenedProjectPath = NSUserDefaults.standardUserDefaults().stringForKey("projectPath")
         if let lastPath = lastOpenedProjectPath {
-            if NSFileManager.defaultManager().fileExistsAtPath(lastPath.stringByDeletingLastPathComponent) {
-                preferedPath = lastPath.stringByDeletingLastPathComponent
+            if NSFileManager.defaultManager().fileExistsAtPath((lastPath as NSString).stringByDeletingLastPathComponent) {
+                preferedPath = (lastPath as NSString).stringByDeletingLastPathComponent
             }
         }
         
@@ -44,7 +44,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
         // get the default empty template
         var template:String? = getEmptyProjectPath()
         if template == nil {
-            println("default Empty Project doesn't exist, no can do")
+            print("default Empty Project doesn't exist, no can do")
             return
         }
         // if the sender contains the path to a template, get it
@@ -55,7 +55,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
             }
         }
         
-        var panel:NSSavePanel = NSSavePanel()
+        let panel:NSSavePanel = NSSavePanel()
         
         panel.directoryURL = NSURL(fileURLWithPath:panelDefaultDirectory())
         panel.prompt = "Create"
@@ -65,7 +65,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
         switch panel.runModal() {
         case NSFileHandlingPanelOKButton:
             if let destination = panel.directoryURL?.path {
-                copyTemplate(template!, to: destination.stringByAppendingPathComponent(panel.nameFieldStringValue))
+                copyTemplate(template!, to: (destination as NSString).stringByAppendingPathComponent(panel.nameFieldStringValue))
             }
             break
         case NSFileHandlingPanelCancelButton:
@@ -78,11 +78,14 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     
     func copyTemplate(templatePath:String, to destinationPath:String) {
         var error:NSError?
-        if NSFileManager.defaultManager().copyItemAtPath(templatePath, toPath: destinationPath, error: &error) {
+        do {
+            try NSFileManager.defaultManager().copyItemAtPath(templatePath, toPath: destinationPath)
             focusOrAddWindowForProjectAtPath(destinationPath)
+        } catch let error1 as NSError {
+            error = error1
         }
         if let actualError = error {
-            println("\(self.className) error while copying project: \(actualError)")
+            print("\(self.className) error while copying project: \(actualError)")
         }
     }
     
@@ -98,7 +101,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
         }
         
         // else open a panel to choose the project folder
-        var panel:NSOpenPanel = NSOpenPanel()
+        let panel:NSOpenPanel = NSOpenPanel()
         
         panel.directoryURL = NSURL(fileURLWithPath:panelDefaultDirectory())
         panel.prompt = "Choose"
@@ -114,7 +117,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
             if let actualUrl = url {
                 focusOrAddWindowForProjectAtURL(actualUrl)
             } else {
-                println("\(self.className) error: can't convert chosen url to NSURL")
+                print("\(self.className) error: can't convert chosen url to NSURL")
             }
             break
         //case NSCancelButton:
@@ -134,7 +137,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
         if let actualPath = path {
             focusOrAddWindowForProjectAtPath(actualPath)
         } else {
-            println("couldn't convert url to string")
+            print("couldn't convert url to string")
         }
     }
     
@@ -160,18 +163,17 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
             return
         }
         
-        if let storyboard = NSStoryboard(name: "Main", bundle: nil) {   // get storyboard
-            if let controller = storyboard.instantiateControllerWithIdentifier("ProjectWindowController") as? ProjectWindowController {
-                controller.setupProjectAtPath(path)
-                if let window = controller.window { // removing .window?
-                    window.delegate = self;
-                    window.makeKeyAndOrderFront(window)
-                }
-                windows += [controller]
-                addInRecentProjectsMenu(path)
-            } else {
-                println("\(self.className) couldn't instantiate project window controller")
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)   // get storyboard
+        if let controller = storyboard.instantiateControllerWithIdentifier("ProjectWindowController") as? ProjectWindowController {
+            controller.setupProjectAtPath(path)
+            if let window = controller.window { // removing .window?
+                window.delegate = self;
+                window.makeKeyAndOrderFront(window)
             }
+            windows += [controller]
+            addInRecentProjectsMenu(path)
+        } else {
+            print("\(self.className) couldn't instantiate project window controller")
         }
     }
     
@@ -196,22 +198,22 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     func setupTemplateMenu() {
         let templatePath = NSBundle.mainBundle().pathForResource("Templates", ofType: "")
         if templatePath == nil {
-            println("error while retrieving Template folder in resources")
+            print("error while retrieving Template folder in resources")
             return
         }
-        let templates = NSFileManager.defaultManager().contentsOfDirectoryAtPath(templatePath!, error: nil) as? [String]
+        let templates = (try? NSFileManager.defaultManager().contentsOfDirectoryAtPath(templatePath!)) as [String]?
         if templates == nil {
-            println("error while retrieving or converting Templates paths to String")
+            print("error while retrieving or converting Templates paths to String")
             return
         }
         
         let mainMenu = NSApp.mainMenu
         if let menu = mainMenu {
-            let fileMenu = menu?.itemWithTitle("File")?.submenu?.itemWithTitle("Templates")?.submenu
+            let fileMenu = menu.itemWithTitle("File")?.submenu?.itemWithTitle("Templates")?.submenu
             if let actualFileMenu = fileMenu {
-                for (index, template) in enumerate(templates!) {
+                for (_, template) in (templates!).enumerate() {
                     let mi = NSMenuItem(title: template, action: "newProject:", keyEquivalent: "")
-                    mi.representedObject = templatePath!.stringByAppendingPathComponent(template)
+                    mi.representedObject = (templatePath! as NSString).stringByAppendingPathComponent(template)
                     actualFileMenu.addItem(mi)
                 }
             }
@@ -222,7 +224,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     func setupRecentProjectMenu() {
         let pathsObject:AnyObject? = NSUserDefaults.standardUserDefaults().valueForKey("recentProjects")
         if let paths = pathsObject as? [String] {
-            let pathCount = count(paths)
+            let pathCount = paths.count
             if pathCount < 3 {
                 return
             }
@@ -241,7 +243,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     func addInRecentProjectsMenu(path:String) {
         let mainMenu = NSApp.mainMenu
         if let menu = mainMenu {
-            let openRecentMenu = menu?.itemWithTitle("File")?.submenu?.itemWithTitle("Recent Projects")?.submenu
+            let openRecentMenu = menu.itemWithTitle("File")?.submenu?.itemWithTitle("Recent Projects")?.submenu
             if let recentMenu = openRecentMenu {
                 let recentItem = recentMenu.itemWithTitle(path)
                 if let item = recentItem {
@@ -251,7 +253,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
                 mi.representedObject = path
                 recentMenu.insertItem(mi, atIndex: 0)
                 
-                if count(recentMenu.itemArray) > maxRecentProjects+2 {
+                if recentMenu.itemArray.count > maxRecentProjects+2 {
                     recentMenu.removeItemAtIndex(maxRecentProjects)
                 }
                 
@@ -269,7 +271,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     @IBAction func clearRecentProjectsMenu(sender:AnyObject?) {
         let mainMenu = NSApp.mainMenu
         if let menu = mainMenu {
-            let openRecentMenu = menu?.itemWithTitle("File")?.submenu?.itemWithTitle("Recent Projects")?.submenu
+            let openRecentMenu = menu.itemWithTitle("File")?.submenu?.itemWithTitle("Recent Projects")?.submenu
             if let recentMenu = openRecentMenu {
                 recentMenu.removeAllItems()
                 let mi = NSMenuItem(title: "Clear Recent Projects", action: "clearRecentProjectsMenu:", keyEquivalent: "")
@@ -285,7 +287,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     // MARK: * Alert Panels
     
     func projectFolderMissingAtPath(path:String) {
-        var alert = NSAlert()
+        let alert = NSAlert()
         alert.informativeText = "The folder at path \"\(path)\" doesn't exist. Open or create another one."
         alert.messageText = "Project missing"
         alert.addButtonWithTitle("Open Existing")
@@ -309,7 +311,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     // When a window is closed, we remove its controller from the windows array
     func windowWillClose(notification: NSNotification) {
         if let window = notification.object as? NSWindow {
-            for (index, windowController:ProjectWindowController) in enumerate(windows) {
+            for (index, windowController): (Int, ProjectWindowController) in windows.enumerate() {
                 if windowController.window == window {
                     windowController.myTextViewController?.saveCurrentFile()
                     windows.removeAtIndex(index)
@@ -323,7 +325,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     
     func windowDidBecomeKey(notification: NSNotification) {
         if let window = notification.object as? NSWindow {
-            for (index, windowController:ProjectWindowController) in enumerate(windows) {
+            for (index, windowController): (Int, ProjectWindowController) in windows.enumerate() {
                 if windowController.window == window {
                     windowController.onBecomeKeyWindow()
                     break

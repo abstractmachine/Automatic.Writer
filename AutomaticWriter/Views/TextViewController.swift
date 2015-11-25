@@ -50,7 +50,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
         
         highlighter = Highlighter()
         
-        print("text view controller did load\n");
+        print("text view controller did load\n", terminator: "");
     }
     
     @IBAction func toggleTokenFolding(sender:AnyObject?) {
@@ -84,9 +84,9 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
             //let test = "print whole string"
             //println(test[test.startIndex...test.endIndex.predecessor()])
             
-            if count(myTextView.string!) >= 2 {
+            if (myTextView.string!).characters.count >= 2 {
                 // looking for double line breaks \n\n before and after. Make a range out of it for highlighting
-                var backwardIndex = advance(myTextView.string!.startIndex, myTextView.selectedRange().location)
+                var backwardIndex = myTextView.string!.startIndex.advancedBy(myTextView.selectedRange().location)
                 // we don't want the cursor to be at an extreme
                 if backwardIndex == myTextView.string!.endIndex { backwardIndex = backwardIndex.predecessor() }
                 if backwardIndex == myTextView.string!.startIndex { backwardIndex = backwardIndex.successor() }
@@ -106,7 +106,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
                     forwardIndex = forwardIndex.successor()
                 }
                 
-                let range = NSMakeRange(distance(myTextView.string!.startIndex, backwardIndex), distance(backwardIndex, forwardIndex.successor()))
+                let range = NSMakeRange(myTextView.string!.startIndex.distanceTo(backwardIndex), backwardIndex.distanceTo(forwardIndex.successor()))
                 
                 // MARK: -- deactivating highlighting
                 //println("\(self.className): ================================")
@@ -115,7 +115,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
             } else {
                 //println("\(self.className): ================================")
                 //println("\(self.className): highlight for whole file")
-                let range = NSMakeRange(0, count(myTextView.string!))
+                let range = NSMakeRange(0, (myTextView.string!).characters.count)
                 // MARK: -- deactivating highlighting
                 highlightText(range)
             }
@@ -131,7 +131,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
             text.beginEditing()
             
             // get old selected range
-            var oldRange = notification.userInfo?.values.first as! NSRange
+            let oldRange = notification.userInfo?.values.first as! NSRange
             if NSMaxRange(oldRange) < text.length { // when we load a new file, the old range can be out of bounds.
                 //println("\(self.className): ================================")
                 //println("\(self.className): remove foldable and add folded attribute in range \(oldRange)")
@@ -160,7 +160,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
         }
         
         var rangeIterator = adjustedRange.location
-        var rangeEnd = NSMaxRange(adjustedRange)
+        let rangeEnd = NSMaxRange(adjustedRange)
         while (rangeIterator < rangeEnd) {
             var effectiveRange = NSMakeRange(0, 0)
             if let value = text.attribute(attributeRemoved, atIndex: rangeIterator, effectiveRange: &effectiveRange) as? Bool {
@@ -185,7 +185,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
     
     func loadTextFromFile(filePath:String) -> Bool {
         if !NSFileManager.defaultManager().fileExistsAtPath(filePath) {
-            println("\(self.className) error : file at path \(filePath) can't be found")
+            print("\(self.className) error : file at path \(filePath) can't be found")
             return false
         }
         
@@ -200,22 +200,22 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
         }
         
         currentFile = filePath
-        let text = String(contentsOfFile: filePath, encoding: NSUTF8StringEncoding, error: nil)
+        let text = try? String(contentsOfFile: filePath, encoding: NSUTF8StringEncoding)
         
         // setting default behaviour of myTextView
         myTextView.textColor = NSColor.blackColor()
         myTextView.editable = true;
         
         // lock the textView if the file is an automatically generated file (html from an automat file)
-        if filePath.pathExtension == "html" {
+        if (filePath as NSString).pathExtension == "html" {
             
             // look for a file with same name in "automat" folder with "automat" extension
-            let path = filePath.stringByDeletingLastPathComponent
+            let path = (filePath as NSString).stringByDeletingLastPathComponent
             let folder = "automat"
-            let fileName = filePath.lastPathComponent.stringByDeletingPathExtension
+            let fileName = ((filePath as NSString).lastPathComponent as NSString).stringByDeletingPathExtension
             let ext = "automat"
             
-            let automatFilePath = path.stringByAppendingPathComponent(folder).stringByAppendingPathComponent(fileName).stringByAppendingPathExtension(ext)
+            let automatFilePath = (((path as NSString).stringByAppendingPathComponent(folder) as NSString).stringByAppendingPathComponent(fileName) as NSString).stringByAppendingPathExtension(ext)
             
             if let tempFilePath = automatFilePath {
                 if NSFileManager.defaultManager().fileExistsAtPath(tempFilePath) {
@@ -230,10 +230,10 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
             myTextView.string = actualText
             
             // we retain informations about the file we just loaded
-            currentFileAttributes = NSFileManager.defaultManager().attributesOfItemAtPath(currentFile!, error: nil)
+            currentFileAttributes = try? NSFileManager.defaultManager().attributesOfItemAtPath(currentFile!)
         } else {
             // TODO: pop an alert?
-            println("can't get content of file, might be because of encoding")
+            print("can't get content of file, might be because of encoding")
             return false
         }
 		
@@ -244,11 +244,11 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
         //myTextView.textStorage?.font = NSFont(name: "Courier New", size: 14)
 		myTextView.textStorage?.font = NSFont(name: "Courier", size:14)
         
-        if filePath.pathExtension == "automat" {
+        if (filePath as NSString).pathExtension == "automat" {
             // MARK: -- deactivating highlighting
             //println("\(self.className): ================================")
             //println("\(self.className): highlight from loading file")
-            highlightText(NSMakeRange(0, count(text!)))
+            highlightText(NSMakeRange(0, (text!).characters.count))
         }
         
         textModified = false
@@ -258,8 +258,10 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
     
     @IBAction func saveDocument(sender:AnyObject?) {
         saveCurrentFile()
-        if currentFile?.pathExtension == "automat" {
-            AutomatFileManager.generateHtmlFromAutomatFileAtPath(currentFile!)
+        if let actualCurrentFile = currentFile {
+            if (actualCurrentFile as NSString).pathExtension == "automat" {
+                AutomatFileManager.generateHtmlFromAutomatFileAtPath(currentFile!)
+            }
         }
         // tell the delegate that the file has been saved
         delegate?.onFileSaved()
@@ -268,8 +270,10 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
     func saveCurrentFile() -> Bool {
         if let currFile = currentFile {
             if let text = myTextView.string {
-                if text.writeToFile(currFile, atomically: true, encoding: NSUTF8StringEncoding, error: nil) {
+                do {
+                    try text.writeToFile(currFile, atomically: true, encoding: NSUTF8StringEncoding)
                     return true
+                } catch _ {
                 }
             }
         }
@@ -286,15 +290,15 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
         }
         
         // did the file change?
-        let fileInfos = NSFileManager.defaultManager().attributesOfItemAtPath(currentFile!, error: nil)
-        var newDate = fileInfos?[NSFileModificationDate] as? NSDate
-        var oldDate = currentFileAttributes?[NSFileModificationDate] as? NSDate
+        let fileInfos = try? NSFileManager.defaultManager().attributesOfItemAtPath(currentFile!)
+        let newDate = fileInfos?[NSFileModificationDate] as? NSDate
+        let oldDate = currentFileAttributes?[NSFileModificationDate] as? NSDate
         if newDate != nil && oldDate != nil {
             if !newDate!.isEqualToDate(oldDate!) {
                 loadTextFromFile(currentFile!)  // reload file because it has changed
             }
         } else {
-            println("\(self.className): error while retrieving modification date for file")
+            print("\(self.className): error while retrieving modification date for file")
         }
     }
     
@@ -411,7 +415,7 @@ class TextViewController: NSViewController, NSTextViewDelegate, NSLayoutManagerD
     
     // MARK: * View Navigation
     override func becomeFirstResponder() -> Bool {
-        println("became first responoder")
+        print("became first responoder")
         return true
     }
     

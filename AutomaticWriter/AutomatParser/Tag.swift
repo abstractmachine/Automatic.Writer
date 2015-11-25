@@ -12,7 +12,7 @@ enum TagAttribute {
     case ID, CLASS, NONE
 }
 
-class Tag : Printable {
+class Tag : CustomStringConvertible {
     var automatTag:String
     var name:String
     var type:String

@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Pair: Printable {
+class Pair: CustomStringConvertible {
     
     var a:AnyObject
     var b:AnyObject

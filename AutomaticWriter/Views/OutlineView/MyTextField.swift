@@ -23,10 +23,10 @@ class MyTextField: NSTextField {
             splitview = splitview?.superview
         }
         // look for MyTextView
-        if var clipView = splitview?.subviews[1] as? NSView {
+        if var clipView = splitview?.subviews[1] as NSView? {
             while clipView.className != "NSClipView" {
                 if clipView.subviews.count > 0 {
-                    if let subview = clipView.subviews[0] as? NSView {
+                    if let subview = clipView.subviews[0] as NSView? {
                         clipView = subview
                     } else {
                         break
@@ -38,7 +38,7 @@ class MyTextField: NSTextField {
             //println("became first responder. looking for clipView: \(clipView)") // when trying, stops at the NSClipView just before the TextView
             if let actualClipView = clipView as? NSClipView {
                 if let textView = actualClipView.documentView as? MyTextView {
-                    println("became first responder. looking for textView: \(textView)") // we found it!!
+                    Swift.print("became first responder. looking for textView: \(textView)") // we found it!!
                     nextResponder = textView
                     // textView.nextResponder = self // make the app crash
                 }

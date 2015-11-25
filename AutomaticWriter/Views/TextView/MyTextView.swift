@@ -19,11 +19,11 @@ class MyTextView: NSTextView {
     }
     
     override func becomeFirstResponder() -> Bool {
-        println("a \(self.className) became first responder")
+        Swift.print("a \(self.className) became first responder")
         if let nextView = self.nextKeyView {
-            println("next is \(nextView)")
+            Swift.print("next is \(nextView)")
         }
-        println("selection: \(selectedRange())")
+        Swift.print("selection: \(selectedRange())")
         return true
     }
     

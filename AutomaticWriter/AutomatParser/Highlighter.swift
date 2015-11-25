@@ -72,9 +72,15 @@ class Highlighter: NSObject {
     // MARK: * Regex handling
     func initRegex(pattern:String, options:NSRegularExpressionOptions) -> NSRegularExpression? {
         var error:NSError?
-        let regex = NSRegularExpression(pattern: pattern, options: options, error: &error)
+        let regex: NSRegularExpression?
+        do {
+            regex = try NSRegularExpression(pattern: pattern, options: options)
+        } catch let error1 as NSError {
+            error = error1
+            regex = nil
+        }
         if let actualError = error {
-            println("\(self.className) - error while trying to find regex \"\(pattern)\" in string")
+            print("\(self.className) - error while trying to find regex \"\(pattern)\" in string")
             return nil
         } else {
             return regex
@@ -99,7 +105,7 @@ class Highlighter: NSObject {
         if let regex = initRegex(pattern, options: NSRegularExpressionOptions.CaseInsensitive) {
             let matches = regex.matchesInString(fullText!, options: NSMatchingOptions.ReportProgress, range: range)
             for result in matches {
-                let match = result as! NSTextCheckingResult
+                let match = result 
                 var ranges:[NSRange] = [NSRange]()
                 for var i = 0; i < match.numberOfRanges; ++i {
                     ranges += [match.rangeAtIndex(i)]
@@ -141,7 +147,7 @@ class Highlighter: NSObject {
         
         // first we need the beginning of the function
         let funcOpenings = getTokensForPattern(RegexPattern.jsFunctions, ofType: HighlightType.JSDECLARATION, inRange: range)
-        let fullTextLength = count(fullText!)
+        let fullTextLength = (fullText!).characters.count
         
         // then we must find the closing part for each function
         for opening in funcOpenings {
@@ -155,22 +161,23 @@ class Highlighter: NSObject {
                 // enumerate results and stop when we find what we need
                 regex.enumerateMatchesInString(fullText!, options: NSMatchingOptions.ReportProgress, range: newRange) {
                     match, flags, stop in
-                    if match == nil { return }
-                    if self.fullText![advance(self.fullText!.startIndex, match.range.location)] == "{" {
-                        nestedLevel++
-                    } else {
-                        if nestedLevel > 0 {
-                            nestedLevel--
+                    if let actualMatch = match {
+                        if self.fullText![self.fullText!.startIndex.advancedBy(actualMatch.range.location)] == "{" {
+                            nestedLevel++
                         } else {
-                            // we found the closing curly brace
-                            var ranges:[NSRange] = [NSRange]()
-                            let fullRangeLength = (match.range.location + match.range.length) - opening.ranges[0].location
-                            ranges += [NSMakeRange(opening.ranges[0].location, fullRangeLength)]    // full range
-                            ranges += opening.ranges                                                // ranges of opening token
-                            ranges += [match.range]                                                 // range of closing curly brace
-                            
-                            tokens += [HighlightToken(_ranges: ranges, _type: HighlightType.JSDECLARATION)]
-                            stop.memory = true
+                            if nestedLevel > 0 {
+                                nestedLevel--
+                            } else {
+                                // we found the closing curly brace
+                                var ranges:[NSRange] = [NSRange]()
+                                let fullRangeLength = (actualMatch.range.location + actualMatch.range.length) - opening.ranges[0].location
+                                ranges += [NSMakeRange(opening.ranges[0].location, fullRangeLength)]    // full range
+                                ranges += opening.ranges                                                // ranges of opening token
+                                ranges += [actualMatch.range]                                                 // range of closing curly brace
+                                
+                                tokens += [HighlightToken(_ranges: ranges, _type: HighlightType.JSDECLARATION)]
+                                stop.memory = true
+                            }
                         }
                     }
                 }
@@ -187,25 +194,25 @@ class Highlighter: NSObject {
         tokens += getTokensForPattern(RegexPattern.blockClosingTags, ofType: HighlightType.CLOSINGBLOCKTAG, inRange: range)
         tokens += getTokensForPattern(RegexPattern.inlineClosingTags, ofType: HighlightType.CLOSINGINLINETAG, inRange: range)
         
-        tokens.sort({$0.ranges[0].location < $1.ranges[0].location})
+        tokens.sortInPlace({$0.ranges[0].location < $1.ranges[0].location})
         
         var pairs = [Pair]()
         
-        while(count(tokens) > 1) {
+        while(tokens.count > 1) {
             // remove closing tags that could be leading the array
             while tokenIsAClosingTag(tokens[0]) {
                 //println("remove token \(tokens[0])")
                 tokens.removeAtIndex(0)
-                if count(tokens) == 0 { break; }
+                if tokens.count == 0 { break; }
             }
-            if count(tokens) < 2 { break; } // can't find pairs with less than 2 elements
+            if tokens.count < 2 { break; } // can't find pairs with less than 2 elements
             
             var pairFound = 0
             var openingTagIndex = -1
             var nestLevel = 0
             var tokensToRemove = [Int]()
             
-            for (index, token) in enumerate(tokens) {
+            for (index, token) in tokens.enumerate() {
                 if openingTagIndex == -1 {  // we're looking for a tag opening
                     if (!tokenIsAClosingTag(token)) {
                         openingTagIndex = index // that's the opening token

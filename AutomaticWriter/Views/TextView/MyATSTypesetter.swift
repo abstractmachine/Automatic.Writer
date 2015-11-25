@@ -74,7 +74,7 @@ class MyATSTypesetter: NSATSTypesetter {
 				// replacing solid-diamond with open lozenge
 				//var foldGlyph = NSFont(name: "Courier", size:14)!.glyphWithName("lozenge")
 				//println(foldGlyph)
-				var foldGlyph = NSGlyph(179)
+				let foldGlyph = NSGlyph(179)
                 //var foldGlyph = NSGlyph(391) // this is the ♦︎ glyph for "Courier new" font
                 // TODO: try with an enumerate function to see if it's faster
                 var iterator:Int = characterRange.location
@@ -97,7 +97,7 @@ class MyATSTypesetter: NSATSTypesetter {
                     var foldedRange = NSMakeRange(0, 0)
                     if let value = attributedString?.attribute(lineFoldingAttributeName, atIndex: iterator, effectiveRange: &foldedRange) as? Bool {
                         if value {
-                            var glyphRange = glyphRangeForCharacterRange(foldedRange, actualCharacterRange: nil)
+                            let glyphRange = glyphRangeForCharacterRange(foldedRange, actualCharacterRange: nil)
                             // first glyph is NSControlGlyph
                             layoutManager.replaceGlyphAtIndex(glyphRange.location, withGlyph: foldGlyph)
                             // following glyphs are NSNullGlyphs

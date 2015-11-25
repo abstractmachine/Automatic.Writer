@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Token : Printable {
+class Token : CustomStringConvertible {
     var string:String
     var range:NSRange
     

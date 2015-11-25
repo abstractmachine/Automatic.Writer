@@ -35,7 +35,7 @@ class FileBrowserController: NSViewController, NSOutlineViewDelegate, NSOutlineV
         // register for drag and drop on the scroll view
         scrollView.registerForDragAndDrop(self)
         
-        print("file browser controller did load\n");
+        print("file browser controller did load\n", terminator: "");
     }
     
     func setRootFolder(rootFolder:String) {
@@ -45,7 +45,7 @@ class FileBrowserController: NSViewController, NSOutlineViewDelegate, NSOutlineV
             fileManager = AutomatFileManager(_rootFolderPath: tRootFolderPath)
             fileManager?.delegate = self
         } else {
-            println("\(self.className): error while trying to set root item of file browser")
+            print("\(self.className): error while trying to set root item of file browser")
             return
         }
         
@@ -73,7 +73,7 @@ class FileBrowserController: NSViewController, NSOutlineViewDelegate, NSOutlineV
             }
         }
         // expand in reverse order
-        for var i:Int = count(items)-1; i >= 0; i-- {
+        for var i:Int = items.count-1; i >= 0; i-- {
             myOutlineView.expandItem(items[i])
         }
     }
@@ -170,7 +170,7 @@ class FileBrowserController: NSViewController, NSOutlineViewDelegate, NSOutlineV
     func outlineView(outlineView: NSOutlineView, objectValueForTableColumn tableColumn: NSTableColumn?, byItem item: AnyObject?) -> AnyObject? {
         if let fileSystemItem = item as? FileSystemItem {
             if fileSystemItem.isRoot() {
-                return fileSystemItem.relativePath.lastPathComponent
+                return (fileSystemItem.relativePath as NSString).lastPathComponent
             } else {
                 return fileSystemItem.relativePath
             }
@@ -185,7 +185,7 @@ class FileBrowserController: NSViewController, NSOutlineViewDelegate, NSOutlineV
     override func controlTextDidBeginEditing(obj: NSNotification) {
         if let textField = obj.object as? MyTextField {
             editedTextField = textField
-            println("begin editing with \(textField.stringValue)")
+            print("begin editing with \(textField.stringValue)")
             tempFilename = textField.stringValue // retain old value to revert change if something unallowed happen
         }
     }
@@ -199,22 +199,22 @@ class FileBrowserController: NSViewController, NSOutlineViewDelegate, NSOutlineV
                 return
             }
             
-            println("end editing with \(textField.stringValue)")
+            print("end editing with \(textField.stringValue)")
             var filename = textField.stringValue    // get new value from textfield
             
             // escape unwanted characters
             filename = filename.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: ".")) // can't start or end filename with a "."
-            filename = "-".join(filename.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet()))
-            filename = "-".join(filename.componentsSeparatedByCharactersInSet(NSCharacterSet.illegalCharacterSet()))
-            filename = "-".join(filename.componentsSeparatedByCharactersInSet(NSCharacterSet.controlCharacterSet()))
-            filename = "-".join(filename.componentsSeparatedByCharactersInSet(NSCharacterSet(charactersInString: ":/"))) // avoid directory separators (OSX specific, HSF+)
+            filename = filename.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet()).joinWithSeparator("-")
+            filename = filename.componentsSeparatedByCharactersInSet(NSCharacterSet.illegalCharacterSet()).joinWithSeparator("-")
+            filename = filename.componentsSeparatedByCharactersInSet(NSCharacterSet.controlCharacterSet()).joinWithSeparator("-")
+            filename = filename.componentsSeparatedByCharactersInSet(NSCharacterSet(charactersInString: ":/")).joinWithSeparator("-") // avoid directory separators (OSX specific, HSF+)
             
             if let item = myOutlineView.itemAtRow(myOutlineView.selectedRow) as? FileSystemItem {
                 if AutomatFileManager.renameFile(item.fullPath(), to: filename) {
                     textField.stringValue = filename
                     myOutlineView.reloadData()
                 } else {
-                    println("failed to change name. Resetting value \(tempFilename)")
+                    print("failed to change name. Resetting value \(tempFilename)")
                     textField.stringValue = tempFilename
                 }
             }

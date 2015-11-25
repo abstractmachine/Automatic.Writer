@@ -15,25 +15,25 @@ class Project: NSObject {
     
     init(projectPath : String) {
         path = projectPath
-        folderName = path.lastPathComponent
+        folderName = (path as NSString).lastPathComponent
         
         super.init()
     }
     
     func addFilesInFolderPath(folderPath:String, intoArray:NSMutableArray) {
-        let absolutePath = path.stringByAppendingPathComponent(folderPath)
+        let absolutePath = (path as NSString).stringByAppendingPathComponent(folderPath)
         
-        if let content:NSArray = NSFileManager.defaultManager().contentsOfDirectoryAtPath(absolutePath, error: nil) {
+        if let content:NSArray = try? NSFileManager.defaultManager().contentsOfDirectoryAtPath(absolutePath) {
             for file in content {
                 if let fileName = file as? String {
                     if fileName[fileName.startIndex] == "." {
-                        println("ignore invisible file: \(fileName)")
+                        print("ignore invisible file: \(fileName)")
                     } else if fileName == "automat" {
-                        println("ignore automat folder")
+                        print("ignore automat folder")
                     } else {
                         
-                        let fileRelativePath = folderPath.stringByAppendingPathComponent(fileName)
-                        let fileAbsolutePath = absolutePath.stringByAppendingPathComponent(fileName)
+                        let fileRelativePath = (folderPath as NSString).stringByAppendingPathComponent(fileName)
+                        let fileAbsolutePath = (absolutePath as NSString).stringByAppendingPathComponent(fileName)
                         
                         var isDir = ObjCBool(false)
                         if NSFileManager.defaultManager().fileExistsAtPath(fileAbsolutePath, isDirectory: &isDir) {
@@ -43,16 +43,16 @@ class Project: NSObject {
                                 addFilesInFolderPath(fileRelativePath, intoArray: intoArray)
                             } else {
                                 //println("adding file: \(fileName)")
-                                if let attributes : [NSObject : AnyObject] = NSFileManager.defaultManager().attributesOfItemAtPath(fileAbsolutePath, error: nil) {
+                                if let attributes : [NSObject : AnyObject] = try? NSFileManager.defaultManager().attributesOfItemAtPath(fileAbsolutePath) {
                                     
                                     let date:NSDate? = attributes[NSFileModificationDate] as? NSDate
                                     if date == nil {
-                                        println("\(self.className):addFilesInFolderPath: date is nil, we're stopping the process to avoid unattended behaviours")
+                                        print("\(self.className):addFilesInFolderPath: date is nil, we're stopping the process to avoid unattended behaviours")
                                         return
                                     }
                                     
-                                    let fileRelativePathInBook = folderName.stringByAppendingPathComponent(fileRelativePath)
-                                    var dico:NSDictionary = ["path": fileRelativePathInBook, "date": date!]
+                                    let fileRelativePathInBook = (folderName as NSString).stringByAppendingPathComponent(fileRelativePath)
+                                    let dico:NSDictionary = ["path": fileRelativePathInBook, "date": date!]
                                     
                                     intoArray.addObject(dico)
                                 }
@@ -62,12 +62,12 @@ class Project: NSObject {
                 }
             }
         } else {
-            println("can't find content at path: \(absolutePath)")
+            print("can't find content at path: \(absolutePath)")
         }
     }
     
     func getArrayOfFiles() -> NSArray {
-        var array : NSMutableArray = []
+        let array : NSMutableArray = []
         addFilesInFolderPath("", intoArray: array)
         return array
     }

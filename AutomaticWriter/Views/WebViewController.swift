@@ -30,12 +30,12 @@ class WebViewController: NSViewController {
         wkWebView = WKWebView()
         view = wkWebView!
         
-        print("web view controller did load\n");
+        print("web view controller did load\n", terminator: "");
     }
     
     func loadFile(path:String) {
         // make it a valid url
-        var urlPath = path.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)
+        let urlPath = path.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)
         if let actualUrlPath = urlPath {
             // the contructor doesn't add "file://" so we do it manually
             let url = NSURL(string:"file://\(actualUrlPath)")
