@@ -122,6 +122,7 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
         let appName = item?.title
         if let actualAppName = appName {
             if let appPath = NSWorkspace.sharedWorkspace().fullPathForApplication(actualAppName) {
+                print("found app with path : \(appPath)")
                 if let webView = myWebViewController {
                     if webView.hasUrl {
                         // TODO: 
@@ -361,29 +362,29 @@ class ProjectWindowController: NSWindowController, NSSplitViewDelegate, FileBrow
     
     func showHtmlView() {
         if let splitView = mySplitView {
-            if let htmlController = htmlViewController {
-                if let webViewController = myWebViewController {
-                    if splitView.isSubviewCollapsed(webViewController.view) {
-                        showTextAndHtmlViews()
-                    } else {
-                        showThreeViews()
-                    }
+            //if let htmlController = htmlViewController {
+            if let webViewController = myWebViewController {
+                if splitView.isSubviewCollapsed(webViewController.view) {
+                    showTextAndHtmlViews()
+                } else {
+                    showThreeViews()
                 }
             }
+            //}
         }
     }
     func hideHtmlView() {
         if let splitView = mySplitView {
-            if let htmlController = htmlViewController {
-                if let webViewController = myWebViewController {
-                    if splitView.isSubviewCollapsed(webViewController.view) {
-                        splitView.setPosition(splitView.frame.width, ofDividerAtIndex: 2)
-                        splitView.setPosition(splitView.frame.width, ofDividerAtIndex: 1)
-                    } else {
-                        showTextAndPreviewViews()
-                    }
+            //if let htmlController = htmlViewController {
+            if let webViewController = myWebViewController {
+                if splitView.isSubviewCollapsed(webViewController.view) {
+                    splitView.setPosition(splitView.frame.width, ofDividerAtIndex: 2)
+                    splitView.setPosition(splitView.frame.width, ofDividerAtIndex: 1)
+                } else {
+                    showTextAndPreviewViews()
                 }
             }
+            //}
         }
     }
     

@@ -42,8 +42,6 @@ enum HighlightType {
             return "JS"
         case COMMENT:
             return "COMMENT"
-        default:
-            return "UNKNOWN"
         }
     }
 }

@@ -35,7 +35,9 @@ class WebViewController: NSViewController {
     
     func loadFile(path:String) {
         // make it a valid url
-        let urlPath = path.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)
+        
+        //let urlPath = path.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)
+        let urlPath = path.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLPathAllowedCharacterSet())
         if let actualUrlPath = urlPath {
             // the contructor doesn't add "file://" so we do it manually
             let url = NSURL(string:"file://\(actualUrlPath)")

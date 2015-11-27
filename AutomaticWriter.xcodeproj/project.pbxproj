@@ -347,7 +347,7 @@
 			attributes = {
 				LastSwiftMigration = 0710;
 				LastSwiftUpdateCheck = 0710;
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "HEAD Geneva";
 				TargetAttributes = {
 					64A225051A6424B50072DE6A = {
@@ -491,6 +491,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -556,6 +557,7 @@
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = AutomaticWriter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "ch.HEAD.Research.EcrituresMobiles.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = AutomaticWriter/MMarkdown/MMarkdownBridgingHeader.h;
 			};
@@ -569,6 +571,7 @@
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = AutomaticWriter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "ch.HEAD.Research.EcrituresMobiles.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = AutomaticWriter/MMarkdown/MMarkdownBridgingHeader.h;
 			};
@@ -589,6 +592,7 @@
 				);
 				INFOPLIST_FILE = AutomaticWriterTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "ch.HEAD.Research.EcrituresMobiles.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AutomaticWriter.app/Contents/MacOS/AutomaticWriter";
 			};
@@ -605,6 +609,7 @@
 				);
 				INFOPLIST_FILE = AutomaticWriterTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "ch.HEAD.Research.EcrituresMobiles.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AutomaticWriter.app/Contents/MacOS/AutomaticWriter";
 			};

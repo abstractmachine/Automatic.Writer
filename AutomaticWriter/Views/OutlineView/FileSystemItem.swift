@@ -28,8 +28,6 @@ class FileSystemItem: NSObject {
         super.init()
     }
     
-    
-    
     func isRoot() -> Bool {
         return parent == nil
     }
@@ -85,8 +83,6 @@ class FileSystemItem: NSObject {
             return false
         case .OrderedSame:
             return false
-        default:
-            return false
         }
     }
     
@@ -101,8 +97,8 @@ class FileSystemItem: NSObject {
             
             let directoryContent:[AnyObject]? = try? NSFileManager.defaultManager().contentsOfDirectoryAtPath(path)
             if let content = directoryContent {
-                let numChildren:Int = content.count
-                for (index, child) in content.enumerate() {
+                //let numChildren:Int = content.count
+                for (_, child) in content.enumerate() {
                     let fileName:String? = child as? String
                     if let name = fileName {
                         if name.characters.count < 1 { continue; }
@@ -158,3 +154,4 @@ class FileSystemItem: NSObject {
     }
     
 }
+

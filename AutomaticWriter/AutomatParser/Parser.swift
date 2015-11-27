@@ -619,9 +619,9 @@ class Parser : NSObject {
     //class func findEndOfBraceForJavascriptFunction(brace:Token, inText text:String) -> Token? {
         let functionStartIndex = text.startIndex.advancedBy(openingBraceToken.range.location)
         let braceIntIndex = openingBraceToken.range.location + openingBraceToken.range.length
-        let braceIndex = text.startIndex.advancedBy(braceIntIndex)
-        var index = braceIndex
-        var nested = 0 // keeps track of nested brace we find
+        //let braceIndex = text.startIndex.advancedBy(braceIntIndex)
+        //var index = braceIndex
+        //var nested = 0 // keeps track of nested brace we find
         
         // found all { and }
         let searchRange = NSMakeRange(braceIntIndex, text.characters.count - braceIntIndex)

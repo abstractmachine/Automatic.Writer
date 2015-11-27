@@ -113,12 +113,8 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
         switch panel.runModal() {
 		case NSModalResponseOK:
         //case NSOKButton:
-            let url = panel.URLs[0] as? NSURL
-            if let actualUrl = url {
-                focusOrAddWindowForProjectAtURL(actualUrl)
-            } else {
-                print("\(self.className) error: can't convert chosen url to NSURL")
-            }
+            let url = panel.URLs[0]
+            focusOrAddWindowForProjectAtURL(url)
             break
         //case NSCancelButton:
 		case NSModalResponseCancel:
@@ -260,7 +256,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
                 // save recent projects to user default as array
                 var paths:[AnyObject] = []
                 for item in recentMenu.itemArray {
-                    let it = item as! NSMenuItem
+                    let it = item
                     paths += [it.title]
                 }
                 NSUserDefaults.standardUserDefaults().setValue(paths, forKey: "recentProjects")
@@ -325,7 +321,7 @@ class ProjectWindowsManager: NSObject, NSWindowDelegate {
     
     func windowDidBecomeKey(notification: NSNotification) {
         if let window = notification.object as? NSWindow {
-            for (index, windowController): (Int, ProjectWindowController) in windows.enumerate() {
+            for (_, windowController): (Int, ProjectWindowController) in windows.enumerate() {
                 if windowController.window == window {
                     windowController.onBecomeKeyWindow()
                     break

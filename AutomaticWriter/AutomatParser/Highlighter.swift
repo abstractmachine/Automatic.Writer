@@ -71,19 +71,15 @@ class Highlighter: NSObject {
     
     // MARK: * Regex handling
     func initRegex(pattern:String, options:NSRegularExpressionOptions) -> NSRegularExpression? {
-        var error:NSError?
+        //var error:NSError?
         let regex: NSRegularExpression?
         do {
             regex = try NSRegularExpression(pattern: pattern, options: options)
-        } catch let error1 as NSError {
-            error = error1
-            regex = nil
-        }
-        if let actualError = error {
-            print("\(self.className) - error while trying to find regex \"\(pattern)\" in string")
-            return nil
-        } else {
             return regex
+        } catch let error as NSError {
+            regex = nil
+            print("\(self.className) - error while trying to find regex \"\(pattern)\" in string, error: \(error)")
+            return nil
         }
     }
     
@@ -207,7 +203,6 @@ class Highlighter: NSObject {
             }
             if tokens.count < 2 { break; } // can't find pairs with less than 2 elements
             
-            var pairFound = 0
             var openingTagIndex = -1
             var nestLevel = 0
             var tokensToRemove = [Int]()
