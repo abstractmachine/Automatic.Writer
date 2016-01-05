@@ -63,9 +63,6 @@ class Highlighter: NSObject {
                                      // (?<!\n)\}{2}(?:<([^>\n]+?)>)?[:punct:]*?(?!(\Z|\n))
     }
     
-    // MARK: * properties
-    var fullText:String?
-    
     // MARK: * Utility functions
     func rangeIsValid(range:NSRange) -> Bool {
         return !NSEqualRanges(range, NSMakeRange(NSNotFound, 0))
@@ -85,9 +82,9 @@ class Highlighter: NSObject {
         }
     }
     
-    func getFirstTokenForPattern(pattern:String, ofType type:HighlightType, inRange range:NSRange) -> HighlightToken? {
+    func getFirstTokenForPattern(pattern:String, ofType type:HighlightType, inRange range:NSRange, forText text:String) -> HighlightToken? {
         if let regex = initRegex(pattern, options: NSRegularExpressionOptions.CaseInsensitive) {
-            if let match = regex.firstMatchInString(fullText!, options: NSMatchingOptions.ReportProgress, range: range) {
+            if let match = regex.firstMatchInString(text, options: NSMatchingOptions.ReportProgress, range: range) {
                 var ranges:[NSRange] = [NSRange]()
                 for var i = 0; i < match.numberOfRanges; ++i {
                     ranges += [match.rangeAtIndex(i)]
@@ -98,10 +95,10 @@ class Highlighter: NSObject {
         return nil  // pattern not found in range
     }
     
-    func getTokensForPattern(pattern:String, ofType type:HighlightType, inRange range:NSRange) -> [HighlightToken] {
+    func getTokensForPattern(pattern:String, ofType type:HighlightType, inRange range:NSRange, forText text:String) -> [HighlightToken] {
         var tokens = [HighlightToken]()
         if let regex = initRegex(pattern, options: NSRegularExpressionOptions.CaseInsensitive) {
-            let matches = regex.matchesInString(fullText!, options: NSMatchingOptions.ReportProgress, range: range)
+            let matches = regex.matchesInString(text, options: NSMatchingOptions.ReportProgress, range: range)
             for result in matches {
                 let match = result 
                 var ranges:[NSRange] = [NSRange]()
@@ -116,29 +113,29 @@ class Highlighter: NSObject {
     
     func findAutomatImportsInRange(range:NSRange, forText text:String) -> [HighlightToken] {
         var highlights = [HighlightToken]()
-        highlights += getTokensForPattern(RegexPattern.automatImports, ofType: HighlightType.AUTOMATIMPORT, inRange: range)
+        highlights += getTokensForPattern(RegexPattern.automatImports, ofType: HighlightType.AUTOMATIMPORT, inRange: range, forText: text)
         
         return highlights
     }
     
     // MARK: * Highlights search
     func findHighlightsInRange(range:NSRange, forText text:String) -> [HighlightToken] {
-        fullText = text
+        //fullText = text
         var highlights = [HighlightToken]()
         
-        if let titleToken = getFirstTokenForPattern(RegexPattern.title, ofType: HighlightType.TITLE, inRange: range) {
+        if let titleToken = getFirstTokenForPattern(RegexPattern.title, ofType: HighlightType.TITLE, inRange: range, forText: text) {
             highlights += [titleToken]
         }
-        highlights += getTokensForPattern(RegexPattern.automatImports, ofType: HighlightType.AUTOMATIMPORT, inRange: range)
-        highlights += getTokensForPattern(RegexPattern.cssImports, ofType: HighlightType.CSSIMPORT, inRange: range)
-        highlights += getTokensForPattern(RegexPattern.jsImports, ofType: HighlightType.JSIMPORT, inRange: range)
-        highlights += getTokensForPattern(RegexPattern.jsVars, ofType: HighlightType.JSDECLARATION, inRange: range)
-        highlights += findJsFunctions(range)
-        highlights += getTokensForPattern(RegexPattern.jsFunctionCalls, ofType: HighlightType.JS, inRange: range)
-        highlights += getTokensForPattern(RegexPattern.events, ofType: HighlightType.EVENT, inRange: range)
-        highlights += getTokensForPattern(RegexPattern.twine, ofType: HighlightType.TWINE, inRange: range)
-        highlights += findTags(range)
-        highlights += getTokensForPattern(RegexPattern.comments, ofType: HighlightType.COMMENT, inRange: range) // end with comments to override color
+        highlights += getTokensForPattern(RegexPattern.automatImports, ofType: HighlightType.AUTOMATIMPORT, inRange: range, forText: text)
+        highlights += getTokensForPattern(RegexPattern.cssImports, ofType: HighlightType.CSSIMPORT, inRange: range, forText: text)
+        highlights += getTokensForPattern(RegexPattern.jsImports, ofType: HighlightType.JSIMPORT, inRange: range, forText: text)
+        highlights += getTokensForPattern(RegexPattern.jsVars, ofType: HighlightType.JSDECLARATION, inRange: range, forText: text)
+        highlights += findJsFunctions(range, inText: text)
+        highlights += getTokensForPattern(RegexPattern.jsFunctionCalls, ofType: HighlightType.JS, inRange: range, forText: text)
+        highlights += getTokensForPattern(RegexPattern.events, ofType: HighlightType.EVENT, inRange: range, forText: text)
+        highlights += getTokensForPattern(RegexPattern.twine, ofType: HighlightType.TWINE, inRange: range, forText: text)
+        highlights += findTags(range, inText: text)
+        highlights += getTokensForPattern(RegexPattern.comments, ofType: HighlightType.COMMENT, inRange: range, forText: text) // end with comments to override color
         
         //let start = NSDate()
         //let end = NSDate()
@@ -148,27 +145,27 @@ class Highlighter: NSObject {
         return highlights
     }
     
-    func findJsFunctions(range:NSRange) -> [HighlightToken] {
+    func findJsFunctions(range:NSRange, inText text:String) -> [HighlightToken] {
         var tokens = [HighlightToken]()
         
         // first we need the beginning of the function
-        let funcOpenings = getTokensForPattern(RegexPattern.jsFunctions, ofType: HighlightType.JSDECLARATION, inRange: range)
-        let fullTextLength = (fullText!).characters.count
+        let funcOpenings = getTokensForPattern(RegexPattern.jsFunctions, ofType: HighlightType.JSDECLARATION, inRange: range, forText: text)
+        let textLength = text.characters.count
         
         // then we must find the closing part for each function
         for opening in funcOpenings {
             // search begin at the end of the opening match
             let newRangeLocation = opening.ranges[0].location+opening.ranges[0].length
-            let newRange = NSMakeRange(newRangeLocation, fullTextLength - newRangeLocation)
+            let newRange = NSMakeRange(newRangeLocation, textLength - newRangeLocation)
             
             // use pattern \{|\} to find opening or closing braces
             if let regex = initRegex("\\{|\\}", options: NSRegularExpressionOptions.CaseInsensitive) {
                 var nestedLevel = 0
                 // enumerate results and stop when we find what we need
-                regex.enumerateMatchesInString(fullText!, options: NSMatchingOptions.ReportProgress, range: newRange) {
+                regex.enumerateMatchesInString(text, options: NSMatchingOptions.ReportProgress, range: newRange) {
                     match, flags, stop in
                     if let actualMatch = match {
-                        if self.fullText![self.fullText!.startIndex.advancedBy(actualMatch.range.location)] == "{" {
+                        if text[text.startIndex.advancedBy(actualMatch.range.location)] == "{" {
                             nestedLevel++
                         } else {
                             if nestedLevel > 0 {
@@ -192,13 +189,13 @@ class Highlighter: NSObject {
         return tokens
     }
     
-    func findTags(range:NSRange) -> [HighlightToken] {
+    func findTags(range:NSRange, inText text:String) -> [HighlightToken] {
         var tokens = [HighlightToken]()
         
-        tokens += getTokensForPattern(RegexPattern.blockOpeningTags, ofType: HighlightType.OPENINGBLOCKTAG, inRange: range)
-        tokens += getTokensForPattern(RegexPattern.inlineOpeningTags, ofType: HighlightType.OPENINGINLINETAG, inRange: range)
-        tokens += getTokensForPattern(RegexPattern.blockClosingTags, ofType: HighlightType.CLOSINGBLOCKTAG, inRange: range)
-        tokens += getTokensForPattern(RegexPattern.inlineClosingTags, ofType: HighlightType.CLOSINGINLINETAG, inRange: range)
+        tokens += getTokensForPattern(RegexPattern.blockOpeningTags, ofType: HighlightType.OPENINGBLOCKTAG, inRange: range, forText: text)
+        tokens += getTokensForPattern(RegexPattern.inlineOpeningTags, ofType: HighlightType.OPENINGINLINETAG, inRange: range, forText: text)
+        tokens += getTokensForPattern(RegexPattern.blockClosingTags, ofType: HighlightType.CLOSINGBLOCKTAG, inRange: range, forText: text)
+        tokens += getTokensForPattern(RegexPattern.inlineClosingTags, ofType: HighlightType.CLOSINGINLINETAG, inRange: range, forText: text)
         
         tokens.sortInPlace({$0.ranges[0].location < $1.ranges[0].location})
         
