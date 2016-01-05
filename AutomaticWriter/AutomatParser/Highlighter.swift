@@ -21,6 +21,8 @@ class Highlighter: NSObject {
         static let jsImports = "(?:(?<=\\n)|(?<=\\A))#import \"([^\"]+?.js)\" ?((?://)?.*?)?(?:(?=\\n)|(?=\\Z))"
                              // (?:(?<=\n)|(?<=\A))#import "([^"]+?.js)" ?((?://)?.*?)?(?:(?=\n)|(?=\Z))
         
+        static let automatImports = "(?:(?<=\\n)|(?<=\\A))#import \"([^\"]+?.automat)\" ?((?://)?.*?)?(?:(?=\\n)|(?=\\Z))"
+        
         static let jsVars = "(?:(?<=\\n)|(?<=\\A))(var \\w+? ?= ?[^;\\n]+?; ?(?://.*?)?)(?:(?=\\n)|(?=\\Z))"
                           // (?:(?<=\n)|(?<=\A))(var \w+? ?= ?[^;\n]+?; ?(?://.*?)?)(?:(?=\n)|(?=\Z))
         
@@ -112,6 +114,13 @@ class Highlighter: NSObject {
         return tokens
     }
     
+    func findAutomatImportsInRange(range:NSRange, forText text:String) -> [HighlightToken] {
+        var highlights = [HighlightToken]()
+        highlights += getTokensForPattern(RegexPattern.automatImports, ofType: HighlightType.AUTOMATIMPORT, inRange: range)
+        
+        return highlights
+    }
+    
     // MARK: * Highlights search
     func findHighlightsInRange(range:NSRange, forText text:String) -> [HighlightToken] {
         fullText = text
@@ -120,6 +129,7 @@ class Highlighter: NSObject {
         if let titleToken = getFirstTokenForPattern(RegexPattern.title, ofType: HighlightType.TITLE, inRange: range) {
             highlights += [titleToken]
         }
+        highlights += getTokensForPattern(RegexPattern.automatImports, ofType: HighlightType.AUTOMATIMPORT, inRange: range)
         highlights += getTokensForPattern(RegexPattern.cssImports, ofType: HighlightType.CSSIMPORT, inRange: range)
         highlights += getTokensForPattern(RegexPattern.jsImports, ofType: HighlightType.JSIMPORT, inRange: range)
         highlights += getTokensForPattern(RegexPattern.jsVars, ofType: HighlightType.JSDECLARATION, inRange: range)

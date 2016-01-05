@@ -9,7 +9,7 @@
 import Foundation
 
 enum HighlightType {
-    case NONE, TITLE, CSSIMPORT, JSIMPORT, BLOCKTAG, INLINETAG, OPENINGBLOCKTAG, OPENINGINLINETAG, CLOSINGBLOCKTAG, CLOSINGINLINETAG, EVENT, TWINE, JSDECLARATION, JS, COMMENT
+    case NONE, TITLE, CSSIMPORT, JSIMPORT, AUTOMATIMPORT, BLOCKTAG, INLINETAG, OPENINGBLOCKTAG, OPENINGINLINETAG, CLOSINGBLOCKTAG, CLOSINGINLINETAG, EVENT, TWINE, JSDECLARATION, JS, COMMENT
     var description:String {
         switch self {
         case NONE:
@@ -20,6 +20,8 @@ enum HighlightType {
             return "CSSIMPORT"
         case JSIMPORT:
             return "JSIMPORT"
+        case AUTOMATIMPORT:
+            return "AUTOMATIMPORT"
         case BLOCKTAG:
             return "BLOCKTAG"
         case INLINETAG:

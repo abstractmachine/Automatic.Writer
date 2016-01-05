@@ -36,8 +36,19 @@ class Parser : NSObject {
     
     class func automatToHtmlWithString(automatText:String) -> String? {
         
-        // MARK: * get tokens from highlighter
         let highlighter = Highlighter()
+        
+        // MARK: * import content from other automat files
+        /*
+        let automatImports = highlighter.findAutomatImportsInRange(NSMakeRange(0, automatText.characters.count), forText: automatText)
+        var automatTokens = [ConvertibleToken]()
+        for automatImport in automatImports {
+            let token = ConvertibleToken(_ranges: automatImport.ranges, _type: automatImport.type, _text: automatText)
+            automatTokens += [token];
+        }
+        */
+        
+        // MARK: * get tokens from highlighter
         let highlights = highlighter.findHighlightsInRange(NSMakeRange(0, automatText.characters.count), forText: automatText)
         
         // MARK: * convert them into ConvertibleTokens that contain the string they're replacing
@@ -162,6 +173,10 @@ class Parser : NSObject {
     }
     
     class func convertCssImport(token:ConvertibleToken) -> String {
+        print("converting css import")
+        for group in token.captureGroups {
+            print("capture group: \(group)")
+        }
         return "\t<link rel=\"stylesheet\" type=\"text/css\" href=\"css/\(token.captureGroups[1])\">\n"
     }
     
