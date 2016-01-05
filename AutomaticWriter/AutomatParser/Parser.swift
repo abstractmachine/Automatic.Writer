@@ -18,14 +18,20 @@ class Parser : NSObject {
     }
     class var defaultTitle:String { return "No Title" }
     class var htmlDefaultEnd:String { return "\n</html>" }
+    static var fileDirectory:String = ""
+    static var automatFilesIncluded = [String]()
     
     class func automatFileToHtml(file:String) -> String? {
+        let nsFile = file as NSString
+        fileDirectory = nsFile.stringByDeletingLastPathComponent
+        automatFilesIncluded = [nsFile.lastPathComponent]
+        
         if NSFileManager.defaultManager().fileExistsAtPath(file) {
             let text: String?
             do {
                 text = try String(contentsOfFile: file, encoding: NSUTF8StringEncoding)
                 // we got the text all right
-                return automatToHtmlWithString(text!)
+                return automatToHtmlWithString(includeAutomatFilesForText(text!))
             } catch let error as NSError {
                 print("\(self.className()) - error while retrieving content of file at path \(file), error: \(error)")
                 text = nil
@@ -34,21 +40,60 @@ class Parser : NSObject {
         return nil
     }
     
-    class func automatToHtmlWithString(automatText:String) -> String? {
-        
+    // ==================================================
+    // MARK: Automat file importation
+    
+    class func includeAutomatFilesForText(text:String) -> String {
         let highlighter = Highlighter()
-        
-        // MARK: * import content from other automat files
-        /*
-        let automatImports = highlighter.findAutomatImportsInRange(NSMakeRange(0, automatText.characters.count), forText: automatText)
+        let automatImports = highlighter.findAutomatImportsInRange(NSMakeRange(0, text.characters.count), forText: text)
         var automatTokens = [ConvertibleToken]()
         for automatImport in automatImports {
-            let token = ConvertibleToken(_ranges: automatImport.ranges, _type: automatImport.type, _text: automatText)
+            let token = ConvertibleToken(_ranges: automatImport.ranges, _type: automatImport.type, _text: text)
             automatTokens += [token];
         }
-        */
+        
+        var tempText = text
+        for token in automatTokens {
+            let nsFileDirectory = fileDirectory as NSString
+            let fileName = token.captureGroups[1]
+            if (automatFilesIncluded.contains(fileName)) {
+                // remove token only to avoid reincluding the same file
+                tempText = tempText.stringByReplacingOccurrencesOfString(token.captureGroups[0], withString: "", options: NSStringCompareOptions.LiteralSearch, range: tempText.rangeOfString(token.captureGroups[0]))
+            } else {
+                automatFilesIncluded += [fileName]
+                let file = nsFileDirectory.stringByAppendingPathComponent(fileName)
+                if NSFileManager.defaultManager().fileExistsAtPath(file) {
+                    var fileText: String?
+                    do {
+                        fileText = try String(contentsOfFile: file, encoding: NSUTF8StringEncoding)
+                        // we got the text all right
+                        
+                        // recursion
+                        fileText = includeAutomatFilesForText(fileText!)
+                        
+                        // replace only first occurence by using string.rangeOfString()
+                        tempText = tempText.stringByReplacingOccurrencesOfString(token.captureGroups[0], withString: fileText!, options: NSStringCompareOptions.LiteralSearch, range: tempText.rangeOfString(token.captureGroups[0]))
+                        
+                    } catch let error as NSError {
+                        print("\(self.className()) - error while retrieving content of file at path \(file), error: \(error)")
+                    }
+                } else {
+                    // replace with an error message
+                    tempText = tempText.stringByReplacingOccurrencesOfString(token.captureGroups[0], withString: "ERROR: file with name \"\(token.captureGroups[1])\" could not be found.", options: NSStringCompareOptions.LiteralSearch, range: Range(start: tempText.startIndex, end: tempText.endIndex))
+                }
+            }
+        }
+        
+        return tempText
+    }
+    
+    // ==================================================
+    // MARK: The main parsing function
+    
+    class func automatToHtmlWithString(automatText:String) -> String? {
         
         // MARK: * get tokens from highlighter
+        let highlighter = Highlighter()
         let highlights = highlighter.findHighlightsInRange(NSMakeRange(0, automatText.characters.count), forText: automatText)
         
         // MARK: * convert them into ConvertibleTokens that contain the string they're replacing
@@ -173,10 +218,11 @@ class Parser : NSObject {
     }
     
     class func convertCssImport(token:ConvertibleToken) -> String {
-        print("converting css import")
-        for group in token.captureGroups {
-            print("capture group: \(group)")
-        }
+        // to see what we have as capture group (infos need to be added in Highlighter's regexes)
+        //print("converting css import")
+        //for group in token.captureGroups {
+        //    print("capture group: \(group)")
+        //}
         return "\t<link rel=\"stylesheet\" type=\"text/css\" href=\"css/\(token.captureGroups[1])\">\n"
     }
     
